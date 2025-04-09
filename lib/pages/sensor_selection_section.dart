@@ -16,7 +16,7 @@ class SensorSelectionSection extends StatelessWidget {
         children: [
           _buildSensorButton(context, Icons.lightbulb, "Licht"),
           _buildSensorButton(context, Icons.thermostat, "Temperatur"),
-          _buildSensorButton(context, Icons.air, "Luftqualität"),
+          _buildSensorButton(context, Icons.air, "Luftfeuchtigkeit"),
           _buildSensorButton(context, Icons.window, "Fenster"),
         ],
       ),
