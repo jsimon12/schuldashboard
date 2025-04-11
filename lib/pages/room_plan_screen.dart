@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class RoomPlanScreen extends StatefulWidget {
   final String label;
 
-  RoomPlanScreen({required this.label});
+  RoomPlanScreen({required this.label, required List<Map<String, String>> mqttMessages});
 
   @override
   _RoomPlanScreenState createState() => _RoomPlanScreenState();
