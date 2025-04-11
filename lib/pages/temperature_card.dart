@@ -83,7 +83,8 @@ class _TemperatureCardState extends State<TemperatureCard> {
               'cbssimulation/${_selectedBuilding!}/${_selectedFloor!}/${_selectedRoom!}/temp')
           .where('timestamp',
               isGreaterThanOrEqualTo: Timestamp.fromDate(_startDate))
-          .where('timestamp', isLessThanOrEqualTo: Timestamp.fromDate(_endDate))
+          .where('timestamp',
+              isLessThanOrEqualTo: Timestamp.fromDate(_getEndOfDay(_endDate)))
           .limit(100);
 
       final snapshot = await query.get();
@@ -112,41 +113,19 @@ class _TemperatureCardState extends State<TemperatureCard> {
     }
   }
 
+  // Hilfsfunktion: Setzt Enddatum auf 23:59:59
+  DateTime _getEndOfDay(DateTime date) {
+    return DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+  }
+
   Future<void> _selectDateRange() async {
-    final result = await showDialog<DateTimeRange>(
+    DateTimeRange? result = await showDateRangePicker(
       context: context,
-      builder: (context) {
-        return Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 700), // Erweiterung hier
-            child: Material(
-              color: Colors.transparent,
-              child: Theme(
-                data: Theme.of(context).copyWith(
-                  dialogBackgroundColor: Colors.deepPurple.shade300,
-                  colorScheme: ColorScheme.light(
-                    primary: Colors.deepPurple.shade600,
-                    onPrimary: Colors.white,
-                    onSurface: Colors.white,
-                  ),
-                  textButtonTheme: TextButtonThemeData(
-                    style: TextButton.styleFrom(foregroundColor: Colors.white),
-                  ),
-                ),
-                child: DateRangePickerDialog(
-                  initialDateRange: DateTimeRange(
-                    start: _startDate,
-                    end: _endDate,
-                  ),
-                  firstDate: DateTime.now().subtract(Duration(days: 365)),
-                  lastDate: DateTime.now(),
-                  initialEntryMode: DatePickerEntryMode.input,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+      initialDateRange: DateTimeRange(start: _startDate, end: _endDate),
+      firstDate: DateTime.now().subtract(Duration(days: 365)),
+      lastDate: DateTime.now(),
+      initialEntryMode: DatePickerEntryMode.input, // keine Kalenderansicht
+      locale: const Locale('de', 'DE'),
     );
 
     if (result != null) {
@@ -260,9 +239,13 @@ class _TemperatureCardState extends State<TemperatureCard> {
                         ),
                       ),
                       SizedBox(width: 12),
-                      Text(
-                        "${DateFormat('dd.MM.yyyy').format(_startDate)} – ${DateFormat('dd.MM.yyyy').format(_endDate)}",
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      Flexible(
+                        child: Text(
+                          "${DateFormat('dd.MM.yyyy').format(_startDate)} – ${DateFormat('dd.MM.yyyy').format(_endDate)}",
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
                       ),
                     ],
                   ),
