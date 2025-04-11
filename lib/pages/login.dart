@@ -16,13 +16,11 @@ class _LoginScreenState extends State<LoginScreen> {
   // Login-Funktion
   Future<void> _login() async {
     try {
-      // Versuche, den Benutzer mit Firebase Auth zu authentifizieren
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
-      
-      // Erfolgreicher Login: Weiterleitung zum Home-Screen oder Dashboard
+
       if (userCredential.user != null) {
         print("Login erfolgreich!");
         Navigator.pushReplacement(
@@ -32,7 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       String message = 'Fehler beim Login: ${e.message}';
-      // Zeige Fehlernachricht an
       showDialog(
         context: context,
         builder: (context) {
@@ -56,62 +53,74 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF2C0D52), // Hintergrundfarbe der Seite
+      backgroundColor: Color(0xFF2C0D52),
       appBar: AppBar(
         title: Text('CBS Dashboard'),
         centerTitle: true,
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 34),
-        backgroundColor: Color(0xFF2C0D52), // AppBar-Farbe
+        backgroundColor: Color(0xFF2C0D52),
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Container(
-            width: 350, // Container-Breite explizit festgelegt
-            padding: EdgeInsets.all(20), // Innenabstand des Containers
-            decoration: BoxDecoration(
-              color: Colors.white, // Hintergrundfarbe des Containers
-              borderRadius: BorderRadius.circular(12), // Abgerundete Ecken
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26, // Schattenfarbe
-                  offset: Offset(0, 4), // Position des Schattens
-                  blurRadius: 6, // Weichzeichnung des Schattens
-                ),
-              ],
+          child: Theme(
+            data: ThemeData(
+              textTheme: TextTheme(
+                bodyMedium: TextStyle(color: Colors.black),
+              ),
+              inputDecorationTheme: InputDecorationTheme(
+                labelStyle: TextStyle(color: Colors.black87),
+              ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // Container passt sich an den Inhalt an
-              children: <Widget>[
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'E-Mail',
-                    border: OutlineInputBorder(),
+            child: Container(
+              width: 350,
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    offset: Offset(0, 4),
+                    blurRadius: 6,
                   ),
-                ),
-                SizedBox(height: 16),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Passwort',
-                    border: OutlineInputBorder(),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    controller: _emailController,
+                    style: TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      labelText: 'E-Mail',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _login(), // Hier wird bei Enter gedrückt!
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _login,
-                  child: Text('Login'),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 40),
-                    backgroundColor: Color(0xFF2C0D52), // Button-Farbe
-                    textStyle: TextStyle(color: Colors.white, fontSize: 24),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    style: TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      labelText: 'Passwort',
+                      border: OutlineInputBorder(),
+                    ),
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _login(),
                   ),
-                ),
-              ],
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _login,
+                    child: Text('Login'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 40),
+                      backgroundColor: Color(0xFF2C0D52),
+                      textStyle: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
