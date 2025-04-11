@@ -1,0 +1,78 @@
+{
+  "@@locale": "en",
+
+  "dashboard": "CBS-Dashboard",
+  "temperature": "Temperature",
+  "humidity": "Humidity",
+  "light": "Light",
+  "window": "Window",
+
+  "selectBuilding": "Select building",
+  "selectFloor": "Select floor",
+  "selectRoom": "Select room",
+  "selectDateRange": "Select date range",
+  "noData": "No data available",
+  "pleaseSelectFilter": "Please select filter",
+
+  "weatherLoading": "Loading...",
+  "weatherError": "Error",
+  "weatherOffline": "Offline",
+
+  "logout": "Logout",
+  "close": "Close",
+  "currentAlerts": "Current Alerts",
+  "noCriticalValues": "No critical values.",
+
+  "room": "Room",
+  "building": "Building",
+  "floor": "Floor",
+  "roomPlan": "Room plan",
+  "updatedAt": "Updated",
+
+  "changeLanguage": "Change language",
+  "login": "Login",
+  "email": "Email",
+  "password": "Password",
+  "loginErrorTitle": "Login failed",
+  "loginError": "Login error: {message}",
+  "@loginError": {
+    "placeholders": {
+      "message": {
+        "type": "Object"
+      }
+    }
+  },
+
+  "topic": "Topic: {value}",
+  "@topic": {
+    "description": "Topic label with value",
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+
+  "dateRange": "{start} – {end}",
+  "@dateRange": {
+    "placeholders": {
+      "start": {
+        "type": "Object"
+      },
+      "end": {
+        "type": "Object"
+      }
+    }
+  },
+
+  "alarmTitleTemperature": "Temperature critical",
+  "alarmTitleHumidity": "Humidity critical",
+  "alarmMessageValue": "Value: {value}",
+  "@alarmMessageValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
+}

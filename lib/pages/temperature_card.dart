@@ -1,35 +1,43 @@
+// Imports für UI, Firebase Firestore, Diagramme, Datum und Lokalisierung
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'package:schuldashboard/l10n/app_localizations.dart';
 
+/// Widget zum Anzeigen historischer Temperaturdaten als Diagramm mit Filteroptionen.
 class TemperatureCard extends StatefulWidget {
   @override
   _TemperatureCardState createState() => _TemperatureCardState();
 }
 
 class _TemperatureCardState extends State<TemperatureCard> {
+  // Auswahlfilter für Gebäude, Etage und Raum
   String? _selectedBuilding;
   String? _selectedFloor;
   String? _selectedRoom;
 
+  // Listen mit allen verfügbaren Filteroptionen
   List<String> _buildings = [];
   List<String> _floors = [];
   List<String> _rooms = [];
 
+  // Daten für das Diagramm
   List<_TempData> _chartData = [];
   bool _isLoading = false;
   bool _isFilterLoading = true;
 
+  // Zeitspanne für die Abfrage (letzte 7 Tage)
   DateTime _startDate = DateTime.now().subtract(Duration(days: 7));
   DateTime _endDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _loadFilterOptions();
+    _loadFilterOptions(); // Lade mögliche Filter aus der Datenbank
   }
 
+  /// Lade verfügbare Gebäude-, Etagen- und Raumoptionen
   Future<void> _loadFilterOptions() async {
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -59,19 +67,14 @@ class _TemperatureCardState extends State<TemperatureCard> {
     }
   }
 
+  /// Lade Temperaturdaten aus Firestore basierend auf Auswahl und Zeitraum
   Future<void> _loadChartData() async {
-    if (_selectedBuilding == null ||
-        _selectedFloor == null ||
-        _selectedRoom == null) {
-      setState(() {
-        _chartData = [];
-      });
+    if (_selectedBuilding == null || _selectedFloor == null || _selectedRoom == null) {
+      setState(() => _chartData = []);
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final query = FirebaseFirestore.instance
@@ -79,12 +82,9 @@ class _TemperatureCardState extends State<TemperatureCard> {
           .where('building', isEqualTo: _selectedBuilding)
           .where('floor', isEqualTo: _selectedFloor)
           .where('room', isEqualTo: _selectedRoom)
-          .where('topic', isEqualTo:
-              'cbssimulation/${_selectedBuilding!}/${_selectedFloor!}/${_selectedRoom!}/temp')
-          .where('timestamp',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(_startDate))
-          .where('timestamp',
-              isLessThanOrEqualTo: Timestamp.fromDate(_getEndOfDay(_endDate)))
+          .where('topic', isEqualTo: 'cbssimulation/${_selectedBuilding!}/${_selectedFloor!}/${_selectedRoom!}/temp')
+          .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(_startDate))
+          .where('timestamp', isLessThanOrEqualTo: Timestamp.fromDate(_getEndOfDay(_endDate)))
           .limit(100);
 
       final snapshot = await query.get();
@@ -102,8 +102,6 @@ class _TemperatureCardState extends State<TemperatureCard> {
         _chartData = data;
         _isLoading = false;
       });
-
-      print("Geladene Datenpunkte: ${_chartData.length}");
     } catch (e) {
       print("Fehler beim Laden der Temperaturdaten: $e");
       setState(() {
@@ -113,19 +111,20 @@ class _TemperatureCardState extends State<TemperatureCard> {
     }
   }
 
-  // Hilfsfunktion: Setzt Enddatum auf 23:59:59
+  /// Hilfsfunktion: gibt das Tagesende (23:59:59) zurück
   DateTime _getEndOfDay(DateTime date) {
     return DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
   }
 
+  /// Öffnet einen DateRangePicker zur Auswahl eines Zeitbereichs
   Future<void> _selectDateRange() async {
     DateTimeRange? result = await showDateRangePicker(
       context: context,
       initialDateRange: DateTimeRange(start: _startDate, end: _endDate),
       firstDate: DateTime.now().subtract(Duration(days: 365)),
       lastDate: DateTime.now(),
-      initialEntryMode: DatePickerEntryMode.input, // keine Kalenderansicht
-      locale: const Locale('de', 'DE'),
+      initialEntryMode: DatePickerEntryMode.input,
+      locale: Localizations.localeOf(context),
     );
 
     if (result != null) {
@@ -137,37 +136,35 @@ class _TemperatureCardState extends State<TemperatureCard> {
     }
   }
 
-  String convertBuildingLabel(String val) {
+  // Umwandlung interner Codes in beschriftete Texte (abhängig von Sprache)
+  String convertBuildingLabel(String val, AppLocalizations loc) {
     switch (val) {
-      case 'building_a':
-        return 'Gebäude A';
-      case 'building_b':
-        return 'Gebäude B';
-      case 'building_c':
-        return 'Gebäude C';
-      default:
-        return val;
+      case 'building_a': return "${loc.building} A";
+      case 'building_b': return "${loc.building} B";
+      case 'building_c': return "${loc.building} C";
+      default: return val;
     }
   }
 
-  String convertFloorLabel(String val) {
-    if (val == 'floor_e') return 'Etage E';
+  String convertFloorLabel(String val, AppLocalizations loc) {
+    if (val == 'floor_e') return "${loc.floor} E";
     final match = RegExp(r'floor_(\d+)').firstMatch(val);
-    return match != null ? 'Etage ${match.group(1)}' : val;
+    return match != null ? "${loc.floor} ${match.group(1)}" : val;
   }
 
-  String convertRoomLabel(String val) {
+  String convertRoomLabel(String val, AppLocalizations loc) {
     final match = RegExp(r'room_0?(\d+)').firstMatch(val);
-    return match != null ? 'Raum ${match.group(1)}' : val;
+    return match != null ? "${loc.room} ${match.group(1)}" : val;
   }
 
-  List<CartesianSeries<_TempData, DateTime>> _getSeriesData() {
+  /// Liefert die Datenreihen für das Temperaturdiagramm
+  List<CartesianSeries<_TempData, DateTime>> _getSeriesData(AppLocalizations loc) {
     return [
       LineSeries<_TempData, DateTime>(
         dataSource: _chartData,
         xValueMapper: (data, _) => data.time,
         yValueMapper: (data, _) => data.value,
-        name: 'Temperatur',
+        name: loc.temperature,
         color: Colors.orange,
         width: 2,
         markerSettings: MarkerSettings(isVisible: true),
@@ -177,6 +174,8 @@ class _TemperatureCardState extends State<TemperatureCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Card(
       color: Colors.deepPurple.shade400,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -188,33 +187,31 @@ class _TemperatureCardState extends State<TemperatureCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Temperaturverlauf",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
+                    loc.temperature,
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 12),
+                  // Dropdowns zur Filterauswahl
                   Row(
                     children: [
-                      _buildDropdown("Gebäude", _selectedBuilding, _buildings,
-                          convertBuildingLabel, (val) {
+                      _buildDropdown(loc.building, _selectedBuilding, _buildings,
+                          (val) => convertBuildingLabel(val, loc), (val) {
                         setState(() {
                           _selectedBuilding = val;
                           _loadChartData();
                         });
                       }),
                       SizedBox(width: 12),
-                      _buildDropdown("Etage", _selectedFloor, _floors,
-                          convertFloorLabel, (val) {
+                      _buildDropdown(loc.floor, _selectedFloor, _floors,
+                          (val) => convertFloorLabel(val, loc), (val) {
                         setState(() {
                           _selectedFloor = val;
                           _loadChartData();
                         });
                       }),
                       SizedBox(width: 12),
-                      _buildDropdown("Raum", _selectedRoom, _rooms,
-                          convertRoomLabel, (val) {
+                      _buildDropdown(loc.room, _selectedRoom, _rooms,
+                          (val) => convertRoomLabel(val, loc), (val) {
                         setState(() {
                           _selectedRoom = val;
                           _loadChartData();
@@ -223,25 +220,24 @@ class _TemperatureCardState extends State<TemperatureCard> {
                     ],
                   ),
                   SizedBox(height: 10),
+                  // Datumsauswahl
                   Row(
                     children: [
                       ElevatedButton.icon(
                         onPressed: _selectDateRange,
                         icon: Icon(Icons.date_range, color: Colors.white),
-                        label: Text(
-                          "Zeitraum wählen",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        label: Text(loc.selectDateRange, style: TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepPurple.shade600,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                       ),
                       SizedBox(width: 12),
                       Flexible(
                         child: Text(
-                          "${DateFormat('dd.MM.yyyy').format(_startDate)} – ${DateFormat('dd.MM.yyyy').format(_endDate)}",
+                          DateFormat('dd.MM.yyyy').format(_startDate) +
+                              " – " +
+                              DateFormat('dd.MM.yyyy').format(_endDate),
                           style: TextStyle(color: Colors.white70, fontSize: 14),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
@@ -250,39 +246,27 @@ class _TemperatureCardState extends State<TemperatureCard> {
                     ],
                   ),
                   SizedBox(height: 20),
+                  // Diagramm oder Hinweistext
                   Expanded(
                     child: _isLoading
-                        ? Center(
-                            child:
-                                CircularProgressIndicator(color: Colors.white))
-                        : _selectedBuilding == null ||
-                                _selectedFloor == null ||
-                                _selectedRoom == null
-                            ? Center(
-                                child: Text("Bitte Filter auswählen",
-                                    style: TextStyle(color: Colors.white70)))
+                        ? Center(child: CircularProgressIndicator(color: Colors.white))
+                        : _selectedBuilding == null || _selectedFloor == null || _selectedRoom == null
+                            ? Center(child: Text(loc.pleaseSelectFilter, style: TextStyle(color: Colors.white70)))
                             : _chartData.isEmpty
-                                ? Center(
-                                    child: Text("Keine Daten verfügbar",
-                                        style:
-                                            TextStyle(color: Colors.white70)))
+                                ? Center(child: Text(loc.noData, style: TextStyle(color: Colors.white70)))
                                 : SfCartesianChart(
                                     backgroundColor: Colors.deepPurple.shade400,
                                     primaryXAxis: DateTimeAxis(
-                                      labelStyle:
-                                          TextStyle(color: Colors.white),
+                                      labelStyle: TextStyle(color: Colors.white),
                                       majorGridLines: MajorGridLines(width: 0),
                                     ),
                                     primaryYAxis: NumericAxis(
-                                      labelStyle:
-                                          TextStyle(color: Colors.white),
-                                      majorGridLines: MajorGridLines(
-                                          width: 0.2, color: Colors.white24),
+                                      labelStyle: TextStyle(color: Colors.white),
+                                      majorGridLines: MajorGridLines(width: 0.2, color: Colors.white24),
                                     ),
-                                    tooltipBehavior:
-                                        TooltipBehavior(enable: true),
+                                    tooltipBehavior: TooltipBehavior(enable: true),
                                     legend: Legend(isVisible: false),
-                                    series: _getSeriesData(),
+                                    series: _getSeriesData(loc),
                                   ),
                   ),
                 ],
@@ -291,6 +275,7 @@ class _TemperatureCardState extends State<TemperatureCard> {
     );
   }
 
+  /// Universeller Dropdown-Builder
   Widget _buildDropdown(
     String hint,
     String? value,
@@ -305,14 +290,12 @@ class _TemperatureCardState extends State<TemperatureCard> {
         decoration: InputDecoration(
           labelText: hint,
           labelStyle: TextStyle(color: Colors.white),
-          enabledBorder:
-              UnderlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
+          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
         ),
         items: items
             .map((item) => DropdownMenuItem(
                   value: item,
-                  child: Text(labelFn(item),
-                      style: TextStyle(color: Colors.white)),
+                  child: Text(labelFn(item), style: TextStyle(color: Colors.white)),
                 ))
             .toList(),
         onChanged: onChanged,
@@ -321,6 +304,7 @@ class _TemperatureCardState extends State<TemperatureCard> {
   }
 }
 
+/// Datenmodell für ein Temperatur-Messpunkt im Diagramm
 class _TempData {
   final DateTime time;
   final double value;

@@ -1,38 +1,58 @@
-import 'package:firebase_core/firebase_core.dart';
+// Flutter & Firebase & Lokalisierung
 import 'package:flutter/material.dart';
-import 'package:schuldashboard/firebase_options.dart';
-import 'package:schuldashboard/pages/mqtt_service.dart';
-import 'package:schuldashboard/pages/login.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
 
+// Projektinterne Importe
+import 'firebase_options.dart'; // Firebase-Konfigurationsdaten
+import 'pages/login.dart'; // Erste Seite: LoginScreen
+import 'pages/mqtt_service.dart'; // MQTT-Service
+import 'l10n/app_localizations.dart'; // Lokalisierung
+
+/// Einstiegspunkt der App
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); // Wichtige Initialisierung vor Firebase
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform, // Initialisierung mit Plattformdaten
   );
-  await MqttService().connect(); // MQTT-Verbindung herstellen
-  runApp(MyApp());
+  await MqttService().connect(); // Verbindung zum MQTT-Broker herstellen
+  runApp(MyApp()); // App starten
 }
 
-class MyApp extends StatelessWidget {
+/// Root-Widget mit Zustandsverwaltung (für Sprachumschaltung)
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale _locale = const Locale('de'); // Standard: Deutsch
+
+  /// Funktion zur Sprachumschaltung zwischen Deutsch und Englisch
+  void _toggleLocale() {
+    setState(() {
+      _locale = _locale.languageCode == 'de' ? const Locale('en') : const Locale('de');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Schuldashboard',
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
+        primarySwatch: Colors.deepPurple, // Grundfarbe
         colorScheme: ColorScheme.fromSwatch(
           primarySwatch: Colors.deepPurple,
           accentColor: Colors.deepPurpleAccent,
         ),
         dialogBackgroundColor: Colors.deepPurple.shade400,
-        textTheme: TextTheme(
+        textTheme: const TextTheme(
           bodyMedium: TextStyle(color: Colors.white),
           bodyLarge: TextStyle(color: Colors.white),
           labelLarge: TextStyle(color: Colors.white),
         ),
-        inputDecorationTheme: InputDecorationTheme(
+        inputDecorationTheme: const InputDecorationTheme(
           labelStyle: TextStyle(color: Colors.white70),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.white54),
@@ -50,15 +70,18 @@ class MyApp extends StatelessWidget {
           yearBackgroundColor: MaterialStateProperty.all(Colors.deepPurple.shade600),
         ),
       ),
+      locale: _locale, // Aktuell gewählte Sprache
       localizationsDelegates: const [
+        AppLocalizations.delegate, // Eigene Lokalisierung
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('de', 'DE'), // Deutsch
+        Locale('de'), // Deutsch
+        Locale('en'), // Englisch
       ],
-      home: LoginScreen(),
+      home: LoginScreen(toggleLocale: _toggleLocale), // Startbildschirm mit Sprachumschalter
     );
   }
 }

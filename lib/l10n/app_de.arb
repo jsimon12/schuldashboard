@@ -1,0 +1,78 @@
+{
+  "@@locale": "de",
+
+  "dashboard": "CBS-Dashboard",
+  "temperature": "Temperatur",
+  "humidity": "Luftfeuchtigkeit",
+  "light": "Licht",
+  "window": "Fenster",
+
+  "selectBuilding": "Gebäude wählen",
+  "selectFloor": "Etage wählen",
+  "selectRoom": "Raum wählen",
+  "selectDateRange": "Zeitraum wählen",
+  "noData": "Keine Daten verfügbar",
+  "pleaseSelectFilter": "Bitte Filter auswählen",
+
+  "weatherLoading": "Lade...",
+  "weatherError": "Fehler",
+  "weatherOffline": "Offline",
+
+  "logout": "Abmelden",
+  "close": "Schließen",
+  "currentAlerts": "Aktuelle Warnungen",
+  "noCriticalValues": "Keine kritischen Werte.",
+
+  "room": "Raum",
+  "building": "Gebäude",
+  "floor": "Etage",
+  "roomPlan": "Raumplan",
+  "updatedAt": "Aktualisiert",
+
+  "changeLanguage": "Sprache wechseln",
+  "login": "Login",
+  "email": "E-Mail",
+  "password": "Passwort",
+  "loginErrorTitle": "Login fehlgeschlagen",
+  "loginError": "Fehler beim Login: {message}",
+  "@loginError": {
+    "placeholders": {
+      "message": {
+        "type": "Object"
+      }
+    }
+  },
+
+  "topic": "Topic: {value}",
+  "@topic": {
+    "description": "Topic-Anzeige mit Wert",
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+
+  "dateRange": "{start} – {end}",
+  "@dateRange": {
+    "placeholders": {
+      "start": {
+        "type": "Object"
+      },
+      "end": {
+        "type": "Object"
+      }
+    }
+  },
+
+  "alarmTitleTemperature": "Temperatur kritisch",
+  "alarmTitleHumidity": "Luftfeuchtigkeit kritisch",
+  "alarmMessageValue": "Wert: {value}",
+  "@alarmMessageValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
+}
